@@ -1,0 +1,80 @@
+#!/bin/bash 
+
+function list_contents() {
+    local folder="$1"
+    local result=() # Initialisation du tableau
+    local index=1
+
+    Vérifier que le dossier existe
+    if [ ! -d "$folder" ]; then
+        echo "Erreur : $folder n'est pas un dossier valide."
+        return 1
+    fi
+    
+    result+=("$index" "B:Retour")
+    index=$((index+1))
+    
+    for entry in "$folder"/*; do
+        if [ -d "$entry" ]; then
+            result+=("$index" "D:$(basename "$entry")")
+        elif [ -f "$entry" ]; then
+            result+=("$index" "$(basename "$entry")")
+        fi
+        index=$((index + 1))
+    done
+
+    echo "${result[@]}"
+}
+
+creer_menu() {
+  clear
+  local folder="$1"
+
+  local contenu=($(list_contents "$folder"))
+  dialog --clear --menu "Contenu du dossier : $folder" 20 60 15 "${contenu[@]}" 2>myconfig_menu_choice
+  
+  code_sortie=$?
+  if [[ $code_sortie -eq 1 ]]; then
+    clear
+    return 1
+  elif [[ $code_sortie -eq 255 ]]; then
+    echo "Fenêtre fermée par l'utilisateur."
+    return 1
+  fi
+
+  local choice=$(<myconfig_menu_choice)
+  local choice_text="${contenu["$((choice*2-1))"]}"
+  echo "$choice"
+ 
+  if [[ $choice_text == D:* ]]; then
+    local dossier=$(echo "$choice_text" | cut -d':' -f2)
+    dossier="$folder$dossier/"
+    echo "$folder">>myconfig_prev_folder
+    creer_menu "$dossier"
+  elif [[ $choice_text == B:* ]]; then
+    if [[ $folder == $base_folder ]]; then
+      clear
+      return 0
+    else
+      local prev_folder=$(tail -n 1 myconfig_prev_folder)
+      sed -i '$ d' sed -i '$ d' "$fichier"myconfig_prev_folder
+      creer_menu "$prev_folder"
+    fi
+  else
+    local nom_fichier=$(echo "$choice_text" | cut -d':' -f2)
+    local fichier="$folder$nom_fichier"
+    local nouveau_fichier="${fichier/\/home\/timothee\/.local\/share\/chezmoi\/dot_config/\/home\/timothee\/.config}"
+    chezmoi edit -a "$nouveau_fichier"
+  fi
+}
+
+base_folder="/home/timothee/.local/share/chezmoi/dot_config/"
+rm -f myconfig_menu_choice
+rm -f myconfig_prev_folder
+
+creer_menu "$base_folder"
+
+rm -f myconfig_menu_choice.txt
+rm -f myconfig_prev_folder.txt
+clear
+

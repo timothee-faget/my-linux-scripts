@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Définir le seuil de batterie
+THRESHOLD=20
+# Obtenir le pourcentage de charge actuel
+BATTERY_LEVEL=$(cat /sys/class/power_supply/macsmc-battery/capacity)
+BATTERY_STATE=$(cat /sys/class/power_supply/macsmc-battery/status)
+
+# Vérifier si la batterie est en dessous du seuil
+if [ "$BATTERY_LEVEL" -lt "$THRESHOLD" ]; then
+  if [[ $BATTERY_STATE != "Charging" ]]; then
+  # Envoyer une notification avec Dunst
+    sudo -u timothee DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/1000/bus" DISPLAY=:0 notify-send -r 2233 "CHARGE FAIBLE !" "Il reste $BATTERY_LEVEL%" -u critical
+  fi
+
+fi

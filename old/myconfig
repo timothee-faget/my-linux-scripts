@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# Vérifie si dialog est installé
+if ! command dialog -v &> /dev/null; then
+    echo "Le programme 'dialog' n'est pas installé. Installez-le avec : sudo dnf install dialog"
+    exit 1
+fi
+
+# Fichier temporaire pour stocker la sélection
+tmpfile=$(mktemp)
+
+# Afficher un menu interactif avec dialog
+dialog --clear --title "Open Config" \
+--menu "Choose config file to open :" 20 40 9 \
+1 "ROFI" \
+2 "Alacritty" \
+3 "WayBar - modules" \
+4 "WayBar - style" \
+5 "HyprLand - binds" \
+6 "HyprLand - general" \
+7 "HyprLand - windowrules" \
+8 "HyprLand - decoration" \
+9 "Quitter" 2> $tmpfile
+
+# Lire l'option choisie
+choix=$(<"$tmpfile")
+rm $tmpfile
+
+# Exécuter l'action correspondant au choix
+case $choix in
+    1)
+        clear
+        nano ~/.config/rofi/config.rasi  # Rofi
+        ;;
+    2)
+        clear
+        nano ~/.config/alacritty/alacritty.toml  # Remplacez par le chemin réel du fichier log
+        ;;
+    3)
+        clear
+        nano ~/.config/waybar/modules.json
+        ;;
+    4)
+        clear
+        nano ~/.config/waybar/style.css
+        ;;
+    5)
+	    clear
+        nano ~/.config/hypr/conf/binds.conf
+	    ;;
+    6)
+	    clear
+        nano ~/.config/hypr/conf/general.conf
+	    ;;
+    7)
+	    clear
+        nano ~/.config/hypr/conf/windowrules.conf
+	    ;;
+    8)
+	    clear
+        nano ~/.config/hypr/conf/decoration.conf
+	    ;;
+    9)
+	    clear
+	    ;;
+    *)
+        clear
+        ;;
+esac

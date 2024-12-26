@@ -1,0 +1,88 @@
+#!/bin/bash
+
+# Fichier pour sauvegarder la valeur du volume initial
+VOLUME_FILE="$HOME/.config/hypr/.volume_saved"
+
+# Commande pour récupérer le volume actuel
+get_current_volume() {
+    amixer get Master | grep -oP '\d+%' | head -1 | tr -d '%'
+}
+
+# Fonction pour muter le son
+mute_volume() {
+    current_volume=$(get_current_volume)
+    echo "$current_volume" > "$VOLUME_FILE"  # Sauvegarde du volume actuel
+    amixer set Master 0%
+    notify-send -r 1234 "VOLUME" "Silence" -u low -t 2000
+}
+
+generate_equals() {
+  # Vérifier que l'argument est un entier
+  if ! [[ "$1" =~ ^[0-9]+$ ]]; then
+    echo "Veuillez fournir un nombre entier."
+    return 1
+  fi
+
+    n=$(($1 / 5))
+    n_vides=$((20-$n))
+    local chaine=""
+    for (( i = 0; i < n; i++)); do
+	chaine+="■"
+    done
+    for (( i = 0; i < n_vides; i++)); do
+	chaine+="□"
+    done
+
+  # Générer la chaîne de caractères composée de n symboles '='
+
+  # Retourner le résultat
+  echo "$chaine"
+}
+
+
+# Fonction pour ajuster le volume
+adjust_volume() {
+    direction=$1
+    is_muted=$(amixer get Master | grep -oP '\d+%' | head -1 | tr -d '%')
+
+    if [ "$is_muted" -eq 0 ]; then
+        # Si le son est coupé, on récupère la valeur enregistrée
+        if [ -f "$VOLUME_FILE" ]; then
+            saved_volume=$(cat "$VOLUME_FILE")
+            amixer set Master "${saved_volume}%"
+            rm -f "$VOLUME_FILE"  # Nettoyage après restauration
+        else # Si pas de valeur enregistrée
+            # amixer set Master 50%  # Valeur par défaut si aucun volume n'est sauvegardé
+	    if [ "$direction" == "up" ]; then
+		amixer set Master 5%+
+	    fi
+        fi
+    else
+        # Ajuste le volume après restauration
+        if [ "$direction" == "up" ]; then
+            amixer set Master 5%+
+        elif [ "$direction" == "down" ]; then
+            amixer set Master 5%-
+        fi
+    fi
+    current_vol=$(amixer get Master | grep -oP '\d+%' | head -1 | tr -d '%')
+    equals=$(generate_equals "$current_vol")
+    notify-send -r 1234 "VOLUME" "$equals" -u low -t 2000
+}
+
+# Gestion des arguments passés au script
+case "$1" in
+    mute)
+        mute_volume
+        ;;
+    up)
+        adjust_volume up
+        ;;
+    down)
+        adjust_volume down
+        ;;
+    *)
+        echo "Usage: $0 {mute|up|down}"
+        exit 1
+        ;;
+esac

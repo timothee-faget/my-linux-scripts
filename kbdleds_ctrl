@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Fichier de luminosité clavier
+BRIGHTNESS_FILE="/sys/class/leds/kbd_backlight/brightness"
+CURRENT_BRIGHTNESS=$(cat "$BRIGHTNESS_FILE")
+
+# Vérifie si un argument est fourni
+if [ "$1" == "up" ]; then
+    NEW_BRIGHTNESS=$((CURRENT_BRIGHTNESS + 13))
+elif [ "$1" == "down" ]; then
+    NEW_BRIGHTNESS=$((CURRENT_BRIGHTNESS - 12))
+else
+    echo "Usage: $0 [up|down]"
+    exit 1
+fi
+
+if [ "$NEW_BRIGHTNESS" -lt 0 ]; then
+    NEW_BRIGHTNESS=0
+elif [ "$NEW_BRIGHTNESS" -gt 255 ]; then
+    NEW_BRIGHTNESS=255
+fi
+
+# Écrit la valeur dans le fichier de luminosité
+echo "$NEW_BRIGHTNESS" | tee /sys/class/leds/kbd_backlight/brightness > /dev/null
+
+# Gestion de la notification
+n=$(((100*$NEW_BRIGHTNESS)/1275))
+n_vides=$((20-n))
+local chaine=""
+for (( i = 0; i < n; i++ )); do
+	chaine+="■"
+done
+for (( i = 0; i < n_vides; i++ )); do
+	chaine+="□"
+done
+
+sudo -u timothee DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/1000/bus" DISPLAY=:0 notify-send -r 2233 "CLAVIER" "$chaine" -u low -t 2000
+
+

@@ -74,7 +74,7 @@ rm -f myconfig_prev_folder
 
 creer_menu "$base_folder"
 
-rm -f myconfig_menu_choice.txt
-rm -f myconfig_prev_folder.txt
+rm -f myconfig_menu_choice
+rm -f myconfig_prev_folder
 clear
 

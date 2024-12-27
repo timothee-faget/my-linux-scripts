@@ -1,0 +1,11 @@
+output=$(xdg-user-dir PICTURES)/Screenshots/screenshot_$(date +'%Y-%m-%d_%H-%M-%S').png
+grim -g "$(slurp -d)" "$output"
+cat "$output" | wl-copy
+
+ACTION=$(dunstify --action="default,Reply" "SCREENSHOT" "Cliquer pour ouvrir")
+
+case "$ACTION" in
+"default")
+    xdg-open $output
+    ;;
+esac

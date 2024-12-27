@@ -5,7 +5,7 @@ function list_contents() {
     local result=() # Initialisation du tableau
     local index=1
 
-    Vérifier que le dossier existe
+    # Vérifier que le dossier existe
     if [ ! -d "$folder" ]; then
         echo "Erreur : $folder n'est pas un dossier valide."
         return 1
@@ -77,4 +77,3 @@ creer_menu "$base_folder"
 rm -f myconfig_menu_choice
 rm -f myconfig_prev_folder
 clear
-

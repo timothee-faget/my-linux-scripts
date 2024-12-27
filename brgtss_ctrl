@@ -1,28 +1,21 @@
+#!/bin/bash
+
 # Gestion de la luminosité de l'écran
 get_current_brightness() {
 	current_brightness=$(brightnessctl get)
-	n=$(((100*$current_brightness) / 2545))
-	n_vides=$((20-n))
-	local chaine=""
-	for (( i = 0; i < n; i++)); do
-		chaine+="■"
-	done
-	for (( i = 0; i < n_vides; i++)); do
-		chaine+="□"
-	done
-	echo "$chaine"
+  echo "$((100*$current_brightness / 509))"
 }
 
 case "$1" in
 	up)
 		brightnessctl set 5%+
 		display=$(get_current_brightness)
-		notify-send -r 4321 "LUMINOSITE" "$display" -u low -t 2000
+		notify-send -h int:value:"$display" -r 4321 "LUMINOSITE" -u low -t 2000
 	;;
 	down)
 		brightnessctl set 5%-
 		display=$(get_current_brightness)
-		notify-send -r 4321 "LUMINOSITE" "$display" -u low -t 2000
+		notify-send -h int:value:"$display" -r 4321 "LUMINOSITE" -u low -t 2000
 	;;
 	*)
 		echo "Usage: $0 {up|down}"

@@ -66,8 +66,7 @@ adjust_volume() {
         fi
     fi
     current_vol=$(amixer get Master | grep -oP '\d+%' | head -1 | tr -d '%')
-    equals=$(generate_equals "$current_vol")
-    notify-send -r 1234 "VOLUME" "$equals" -u low -t 2000
+    notify-send -h int:value:"$current_vol" -r 1234 "VOLUME" -u low -t 2000
 }
 
 # Gestion des arguments passés au script
